@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { font-feature-settings: 'cv11', 'ss01'; }
+  body { min-height: 100vh; overflow-x: hidden; }
+  .grid > * { min-width: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .card { @apply bg-white/80 rounded-2xl border border-cream-300 shadow-card; }
+  .card-pad { @apply p-5; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-forest/55; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:opacity-50; }
+  .btn-primary { @apply btn bg-sage text-cream hover:bg-forest; }
+  .btn-ghost { @apply btn text-forest hover:bg-cream-200; }
+  .btn-outline { @apply btn border border-cream-300 bg-white text-forest hover:border-sage; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold; }
+  .input { @apply w-full rounded-xl border border-cream-300 bg-white px-3.5 py-2.5 text-sm text-forest placeholder:text-forest/40 focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/25; }
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #E6DFCC; border-radius: 6px; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(214, 129, 103, 0.55); }
+  100% { box-shadow: 0 0 0 14px rgba(214, 129, 103, 0); }
+}
+.listening { animation: pulse-ring 1.2s ease-out infinite; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.25s ease-out both; }
