@@ -1,8 +1,8 @@
-# MoneyCall
+# Chatter Bank
 
 **Don't just manage your money. Understand what happens next.**
 
-MoneyCall is a conversational banking assistant that checks the future before you act. Ask it to move money or make a purchase by voice, text message, phone call or chat. It projects your next 30 days of balances, bills and paychecks, explains the risk in plain language, offers a safer amount, and only moves (simulated) money after you explicitly confirm.
+Chatter Bank is a conversational banking assistant that checks the future before you act. Ask it to move money or make a purchase by voice, text message, phone call or chat. It projects your next 30 days of balances, bills and paychecks, explains the risk in plain language, offers a safer amount, and only moves (simulated) money after you explicitly confirm.
 
 Built for the **PNC 360° Financial Health Navigator** challenge, with Capital One Nessie, Gemini API, MongoDB Atlas, Photon and a GoDaddy-hosted domain.
 
@@ -17,7 +17,7 @@ npm run dev:server     # API on http://localhost:5000
 npm run dev:client     # app on http://localhost:5173 (new terminal)
 ```
 
-Without any API keys, MoneyCall runs on a synthetic persona (Alex Morgan), a built-in local language engine and an in-memory store. Every number, chart and confirmation works the same. Add keys to turn on the live services:
+Without any API keys, Chatter Bank runs on a synthetic persona (Alex Morgan), a built-in local language engine and an in-memory store. Every number, chart and confirmation works the same. Add keys to turn on the live services:
 
 ```bash
 cp server/.env.example server/.env   # then fill in the keys
@@ -35,7 +35,7 @@ The sidebar's **Connected services** panel shows which are live.
 
 ## How it meets the challenge
 
-| PNC asks for | MoneyCall delivers |
+| PNC asks for | Chatter Bank delivers |
 | --- | --- |
 | One clear view across checking, savings, CDs, IRAs, loans and cards | **All accounts** panel (7 accounts) and **net worth** (assets vs owed) |
 | A conversational coach | Voice, chat, text-message and phone assistant that uses real tool results and gives one concrete next step |
@@ -57,7 +57,7 @@ The sidebar's **Connected services** panel shows which are live.
 Seed data: checking $2,500, savings $1,000, rent $1,800 due in 5 days, paycheck in 12 days.
 
 1. "How much money do I have?" → balances.
-2. "Transfer $1,000 to my savings" → **Risky**. Checking would drop to −$375 the day rent is due. MoneyCall offers a safe amount instead of setting up the transfer.
+2. "Transfer $1,000 to my savings" → **Risky**. Checking would drop to −$375 the day rent is due. Chatter Bank offers a safe amount instead of setting up the transfer.
 3. "What if I transfer only $300?" → both options on one chart. $300 is **Safe**.
 4. "Okay, transfer $300" → confirmation card. Say "confirm" or click **Confirm $300**.
 5. Balances update to $2,200 / $1,300, the forecast redraws, and the audit trail records it.
@@ -92,8 +92,8 @@ Express ── chat orchestrator ── Gemini tool loop  (local engine fallback
 
 1. Sign in at [nessieisreal.com](https://nessieisreal.com) and copy your API key into `NESSIE_API_KEY`. The API only answers over HTTPS (`https://api.nessieisreal.com`).
 2. `cd server && npm run seed` creates the Alex Morgan customer with checking, savings and a credit card, nine bills, an auto loan, a payroll deposit and a grocery purchase, then prints `NESSIE_CUSTOMER_ID=…` to paste into `.env`.
-3. `npm run nessie:check` shows exactly what MoneyCall loads: it reads bills (`upcoming_payment_date` → `payment_date` → `recurring_date`), purchases, deposits, withdrawals and loans, infers the paycheck cadence from payroll deposits and everyday spend from recent purchases, and labels anything Nessie does not model (CD, IRA, student loan) as *linked*.
-4. Confirmed transfers are written to Nessie as two tagged records: a `transfer` on the source account and a `deposit` on the destination (the current sandbox has no payee field on transfers, stores whole-dollar amounts, and never changes balances itself). On every load MoneyCall replays its own tagged records on top of the stored balances, so a restart keeps the right numbers. **Reset demo** deletes those records in Nessie and reloads, which puts the judge demo back to $2,500 / $1,000. If the sandbox rejects a write, the transfer still completes locally and the audit trail shows a sync note, so a demo never stalls.
+3. `npm run nessie:check` shows exactly what Chatter Bank loads: it reads bills (`upcoming_payment_date` → `payment_date` → `recurring_date`), purchases, deposits, withdrawals and loans, infers the paycheck cadence from payroll deposits and everyday spend from recent purchases, and labels anything Nessie does not model (CD, IRA, student loan) as *linked*.
+4. Confirmed transfers are written to Nessie as two tagged records: a `transfer` on the source account and a `deposit` on the destination (the current sandbox has no payee field on transfers, stores whole-dollar amounts, and never changes balances itself). On every load Chatter Bank replays its own tagged records on top of the stored balances, so a restart keeps the right numbers. **Reset demo** deletes those records in Nessie and reloads, which puts the judge demo back to $2,500 / $1,000. If the sandbox rejects a write, the transfer still completes locally and the audit trail shows a sync note, so a demo never stalls.
 
 ## MongoDB Atlas
 
@@ -101,7 +101,7 @@ Create a free cluster, add a database user, allow your IP (or `0.0.0.0/0` for th
 
 ## Photon: text and phone banking
 
-Photon gives MoneyCall a phone number. Texts (iMessage, SMS, WhatsApp) arrive as signed webhooks and are answered by the same agent; the person confirms a transfer by replying **YES**. Calls are routed by SIP to a voice agent and logged in the audit trail.
+Photon gives Chatter Bank a phone number. Texts (iMessage, SMS, WhatsApp) arrive as signed webhooks and are answered by the same agent; the person confirms a transfer by replying **YES**. Calls are routed by SIP to a voice agent and logged in the audit trail.
 
 1. In the [Photon dashboard](https://app.beta.photon.codes) create a project, copy the **Project ID** (`pho_prj_…`) and create an API key with `project:read`, `project:write`, `platforms:read`, `platforms:write`. Put both in `.env`. Hackathon promo code: `HACKWITHPHOTON`.
 2. Expose the API over HTTPS (`PUBLIC_URL`, or locally `ngrok http 5000`), then:
@@ -109,7 +109,7 @@ Photon gives MoneyCall a phone number. Texts (iMessage, SMS, WhatsApp) arrive as
    cd server && npm run photon:setup -- --webhook https://your-public-host --imessage +1YOURPHONE
    ```
    This registers `POST /api/photon/webhook` for `message.received` and `call.*` events, prints `PHOTON_WEBHOOK_SECRET` (paste it into `.env` and restart), and assigns a **shared iMessage line** your phone can text. Shared lines need no carrier campaign; a purchased SMS number (`--sms-number`) can send only after 10DLC approval.
-3. List every phone that should text MoneyCall in `PHOTON_PHONES` (comma-separated E.164). On startup the server gives each one a shared iMessage line and logs which number it should text. Set `TRANSFER_PIN` to a 4-digit PIN; transfers from text or voice are then confirmed by PIN (three wrong attempts cancel), not by a plain "yes".
+3. List every phone that should text Chatter Bank in `PHOTON_PHONES` (comma-separated E.164). On startup the server gives each one a shared iMessage line and logs which number it should text. Set `TRANSFER_PIN` to a 4-digit PIN; transfers from text or voice are then confirmed by PIN (three wrong attempts cancel), not by a plain "yes".
 4. Text the number from your phone: "balance", "move $300 to savings", then your PIN. The thread appears under **Text & phone banking** and every executed transfer shows `via imessage` in the audit trail.
 5. **Voice.** In Photon, open **Voice → Set up default → SIP** and point inbound calls at a voice-agent provider (ElevenLabs cookbook: destination `sips:sip.rtc.elevenlabs.io:5061`, TLS). Give that agent one webhook tool, `POST {PUBLIC_URL}/api/channels/message` with `{ "channel": "voice", "handle": "{{caller}}", "text": "{{utterance}}" }` and the `x-channel-secret` header, and a prompt that reads the returned `reply` aloud. Spoken "yes" confirms the pending transfer exactly like the web button. Photon's `call.started` / `call.ended` events land in the activity list.
 

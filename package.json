@@ -2,7 +2,7 @@
   "name": "moneycall",
   "version": "1.0.0",
   "private": true,
-  "description": "MoneyCall: AI-powered conversational banking that previews the consequences of a decision before it happens.",
+  "description": "Chatter Bank: AI-powered conversational banking that previews the consequences of a decision before it happens.",
   "scripts": {
     "setup": "npm --prefix server install && npm --prefix client install",
     "dev:server": "npm --prefix server run dev",

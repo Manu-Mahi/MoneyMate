@@ -1,6 +1,6 @@
 # Local setup
 
-How to get MoneyCall running on your machine after cloning the repo. Getting the API keys themselves is covered in the README; this assumes a teammate hands you a filled-in `server/.env`.
+How to get Chatter Bank running on your machine after cloning the repo. Getting the API keys themselves is covered in the README; this assumes a teammate hands you a filled-in `server/.env`.
 
 ## Prerequisites
 
@@ -71,7 +71,7 @@ Photon delivers texts to one URL per project, and a tunnel URL is unique to the 
 
 ## 5. Add phones
 
-Each phone that should text MoneyCall needs its own shared iMessage line. List them in `server/.env`, comma-separated, in `+1XXXXXXXXXX` format:
+Each phone that should text Chatter Bank needs its own shared iMessage line. List them in `server/.env`, comma-separated, in `+1XXXXXXXXXX` format:
 
 ```
 PHOTON_PHONES=+19725550100,+14085550100
@@ -87,7 +87,7 @@ On startup the server makes sure every listed phone has a line and prints the pa
 
 Each phone texts its own number, as an iMessage (blue bubble), and must send the first message. Adding a phone later: append it to `PHOTON_PHONES` and restart the server, or run `cd server && npm run photon:setup` which does the same without a restart.
 
-Only phones in this list can reach MoneyCall. A shared line accepts messages from its paired phone alone; anything else is dropped by Photon before it reaches the server.
+Only phones in this list can reach Chatter Bank. A shared line accepts messages from its paired phone alone; anything else is dropped by Photon before it reaches the server.
 
 ## 6. Transfer PIN
 
@@ -97,7 +97,7 @@ TRANSFER_PIN=2468
 
 A 4-digit PIN in `server/.env` is what authorizes a transfer from text or voice. Pick your own; the value above is a placeholder. How it behaves:
 
-- After previewing a transfer, MoneyCall asks for the PIN. The transfer stays pending for 5 minutes.
+- After previewing a transfer, Chatter Bank asks for the PIN. The transfer stays pending for 5 minutes.
 - "yes" alone is refused with a reminder to send the PIN.
 - A wrong PIN leaves the transfer pending and says how many attempts remain.
 - The third wrong PIN cancels the transfer and nothing moves. Attempts are recorded in the audit trail.
