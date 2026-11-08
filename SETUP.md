@@ -23,7 +23,15 @@ npm test
 
 Ask a teammate for `server/.env` and drop it into `server/`. Do not type values into `server/.env.example`; that file is committed to git, `.env` is not.
 
-Two values in that file are machine-specific and you will replace them in step 4: `PUBLIC_URL` and `PHOTON_WEBHOOK_SECRET`.
+What's in it:
+
+| Group | Variables | Notes |
+| --- | --- | --- |
+| Shared service keys | `GEMINI_API_KEY`, `NESSIE_API_KEY`, `NESSIE_CUSTOMER_ID`, `MONGODB_URI`, `PHOTON_PROJECT_ID`, `PHOTON_API_KEY` | Same for the whole team. Copy as given. |
+| Machine-specific | `PUBLIC_URL`, `PHOTON_WEBHOOK_SECRET` | Tied to your tunnel. You replace both in step 4. |
+| Security settings | `PHOTON_PHONES`, `TRANSFER_PIN`, `CHANNEL_SECRET` | Who may text in, the PIN that authorizes transfers, and the header external callers must send. Steps 5 and 6. |
+
+The server reads `.env` only at startup, so any change means restarting it.
 
 ## 3. Run the app
 
@@ -79,22 +87,45 @@ On startup the server makes sure every listed phone has a line and prints the pa
 
 Each phone texts its own number, as an iMessage (blue bubble), and must send the first message. Adding a phone later: append it to `PHOTON_PHONES` and restart the server, or run `cd server && npm run photon:setup` which does the same without a restart.
 
+Only phones in this list can reach MoneyCall. A shared line accepts messages from its paired phone alone; anything else is dropped by Photon before it reaches the server.
+
 ## 6. Transfer PIN
 
-`TRANSFER_PIN=2468` in `server/.env` sets the 4-digit PIN that confirms transfers from text and voice. After MoneyCall previews a transfer it asks for the PIN; "yes" alone is refused, a wrong PIN gets two more tries, and the third wrong PIN cancels the transfer. The PIN is masked in the stored conversation. Leave the variable empty to confirm with a plain YES instead. The web app's Confirm button is unchanged.
+```
+TRANSFER_PIN=2468
+```
+
+A 4-digit PIN in `server/.env` is what authorizes a transfer from text or voice. Pick your own; the value above is a placeholder. How it behaves:
+
+- After previewing a transfer, MoneyCall asks for the PIN. The transfer stays pending for 5 minutes.
+- "yes" alone is refused with a reminder to send the PIN.
+- A wrong PIN leaves the transfer pending and says how many attempts remain.
+- The third wrong PIN cancels the transfer and nothing moves. Attempts are recorded in the audit trail.
+- "no" cancels at any point.
+- The PIN is masked as •••• before the conversation is stored, so it never reaches Atlas or the web UI.
+- Leave `TRANSFER_PIN` empty and a plain YES confirms instead.
+
+The web app's Confirm button is unchanged: the browser session itself is the authorization there.
+
+Also in this group: `CHANNEL_SECRET`. If set, any external caller of `POST /api/channels/message` (a voice agent, a script) must send it in the `x-channel-secret` header. The in-app demo phone is exempt. Leave it empty unless you connect a voice agent.
+
+**Keep these out of git.** `TRANSFER_PIN`, `PHOTON_WEBHOOK_SECRET` and `CHANNEL_SECRET` live only in `server/.env`. Never paste them into `server/.env.example`, screenshots or chat; the smoke test uses its own fake values.
 
 ## 7. Check the text channel
 
 From an added phone, iMessage its number:
 
 1. `balance`
-2. `move $300 to savings`
-3. `2468` (your PIN)
+2. `move $300 to savings` → preview, then "Reply with your 4-digit PIN to confirm, or NO to cancel."
+3. `yes` → refused, asks for the PIN again
+4. `2468` (your PIN) → "Done. $300 moved…"
+5. `move $20 to savings`, then `no` → cancelled
 
 Replies arrive in the thread and show up in the web app under **AI Banking Assistant → Text & phone banking**. If nothing comes back, the server log line `[photon] event processing failed: …` says why, and `curl http://localhost:5000/api/channels/activity` lists what arrived.
 
 ## Every time you start work
 
 1. Start the tunnel. If its URL differs from `PUBLIC_URL` in `.env`, do step 4 again.
-2. Start the server, then the client.
-3. Press **Reset demo** in the top bar so balances start at $2,500 / $1,000.
+2. Start the server, then the client. Check the log for the `[photon] iMessage lines` table; every phone that will text today should be in it.
+3. Make sure everyone texting knows the current `TRANSFER_PIN`.
+4. Press **Reset demo** in the top bar so balances start at $2,500 / $1,000.
