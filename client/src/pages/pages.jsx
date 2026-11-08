@@ -5,6 +5,7 @@ import { api } from '../lib/api.js';
 import { money, shortDate, RISK } from '../lib/format.js';
 import ImpactPreview from '../components/ImpactPreview.jsx';
 import ChatPanel from '../components/ChatPanel.jsx';
+import ChannelCard from '../components/ChannelCard.jsx';
 import { SafeToSpendCard, NetWorthCard, HealthScore, HealthIndicators, AccountsPanel, BillsList, TransactionsList, DataNote } from '../components/widgets.jsx';
 
 export function Dashboard() {
@@ -36,6 +37,7 @@ export function Assistant() {
       <div className="xl:col-span-6"><ChatPanel tall /></div>
       <div className="space-y-5 xl:col-span-6">
         <ImpactPreview height={340} />
+        <ChannelCard />
         <BillsList limit={5} />
       </div>
     </div>
@@ -73,10 +75,14 @@ export function Transactions() {
               <div className="flex justify-between"><span className="font-medium">{money(p.amount)}</span>
                 <span className={`chip !py-0 text-[10px] ${p.status === 'executed' ? 'bg-sage-soft text-sage' : p.status === 'pending' ? 'bg-gold-soft text-gold-deep' : 'bg-cream-300 text-forest/60'}`}>{p.status}</span></div>
               <div className="truncate text-[11px] text-forest/60">{p.label}</div>
+              <div className="text-[10px] text-forest/45">
+                via {p.channel && p.channel !== 'web' ? p.channel : 'web app'}{p.nessieTransferId ? ' · written to Nessie' : ''}{p.syncNote ? ` · ${p.syncNote}` : ''}
+              </div>
             </li>
           ))}
         </ul>
       </section>
+      <div className="lg:col-span-3"><ChannelCard /></div>
     </div>
   );
 }

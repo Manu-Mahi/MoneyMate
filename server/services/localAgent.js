@@ -1,4 +1,4 @@
-import { runTool } from './tools.js';
+import { runTool, confirmHint } from './tools.js';
 import { findAccount } from './bank.js';
 import * as store from './store.js';
 import { money, fmtDate } from '../lib/util.js';
@@ -23,6 +23,7 @@ function parseAccount(text, word) {
 }
 
 const riskWord = { low: 'safe', medium: 'tight', high: 'risky' };
+const cap = (s) => s.replace(/\btheir\b/g, 'your').replace(/^\w/, (c) => c.toUpperCase());
 
 async function lastScenario(ctx) {
   const id = (ctx.conv.lastScenarioIds || []).at(-1);
@@ -59,7 +60,7 @@ async function transferFlow(text, amount, ctx, { force = false, compare = false 
     const head = r.risk_level === 'low'
       ? `Good news: ${money(amount)} to ${to.nickname} is safe. Your lowest projected checking balance is ${money(r.lowest_projected_checking.balance)} on ${fmtDate(r.lowest_projected_checking.date)}.`
       : `Okay, I've set it up even though it's ${riskWord[r.risk_level]}: ${r.headline}`;
-    return `${head} Press Confirm to make the transfer.`;
+    return `${head} ${cap(confirmHint(ctx))} to make the transfer.`;
   }
 
   const alt = r.safe_alternative_amount;
@@ -96,7 +97,7 @@ export async function localAgent(message, ctx) {
       const p = await store.getPending(last.pendingId);
       if (p && p.status === 'pending' && new Date(p.expiresAt) > new Date()) {
         ctx.ui.pending = p;
-        return `Your ${money(p.amount)} transfer is ready. Press Confirm to finish.`;
+        return `Your ${money(p.amount)} transfer is ready. ${cap(confirmHint(ctx))} to finish.`;
       }
     }
   }

@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import config, { hasGemini, hasNessie } from '../config.js';
-import { getSnapshot, resetSnapshot, executeTransfer, findAccount, daysUntil } from '../services/bank.js';
-import { project, simulate, safeToSpend } from '../services/simulator.js';
+import config, { hasGemini, hasNessie, hasPhoton } from '../config.js';
+import { getSnapshot, resetSnapshot, resetNessieDemo, daysUntil } from '../services/bank.js';
+import { project, safeToSpend } from '../services/simulator.js';
 import { computeHealth } from '../services/health.js';
 import { chat } from '../services/agent.js';
 import { makeContext, runTool } from '../services/tools.js';
+import { confirmPending, cancelPending } from '../services/transactions.js';
+import { handleInbound } from '../services/channels.js';
 import * as store from '../services/store.js';
-import { money } from '../lib/util.js';
 
 const router = Router();
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -38,15 +39,20 @@ export async function buildOverview() {
   };
 }
 
-router.get('/status', (req, res) => {
+router.get('/status', wrap(async (req, res) => {
+  const snap = await getSnapshot();
   res.json({
     ok: true,
     gemini: hasGemini(),
     model: hasGemini() ? config.gemini.model : null,
     nessie: hasNessie(),
+    nessieLive: snap.source === 'nessie',
     store: store.storeMode(),
+    photon: hasPhoton(),
+    photonWebhook: hasPhoton() && Boolean(config.photon.webhookSecret),
+    publicUrl: config.publicUrl || null,
   });
-});
+}));
 
 router.get('/overview', wrap(async (req, res) => res.json(await buildOverview())));
 
@@ -95,7 +101,28 @@ router.post('/compare', wrap(async (req, res) => {
 router.post('/chat', wrap(async (req, res) => {
   const { conversationId, message } = req.body || {};
   if (!message || !String(message).trim()) return res.status(400).json({ error: 'message is required' });
-  res.json(await chat({ conversationId, message: String(message).slice(0, 1000) }));
+  res.json(await chat({ conversationId, message: String(message).slice(0, 1000), channel: 'web' }));
+}));
+
+// Channel-agnostic entry point: Photon texts, a phone voice agent (ElevenLabs
+// tool call), or the "Text MoneyCall" demo card all post here. "yes"/"no"
+// resolve the open pending transaction in that thread.
+router.post('/channels/message', wrap(async (req, res) => {
+  const { channel = 'text', handle = 'demo', text, message, conversationId } = req.body || {};
+  // The in-app demo phone is as open as the rest of the web UI; the secret guards external callers (voice agents, scripts).
+  if (config.channelSecret && channel !== 'sms-demo' && req.get('x-channel-secret') !== config.channelSecret) {
+    return res.status(401).json({ error: 'Invalid channel secret' });
+  }
+  const body = String(text ?? message ?? '').trim();
+  if (!body) return res.status(400).json({ error: 'text is required' });
+  const r = await handleInbound({ channel: String(channel).slice(0, 30), handle: String(handle).slice(0, 60), text: body.slice(0, 1000), conversationId });
+  if (r.executed) r.overview = await buildOverview();
+  res.json(r);
+}));
+
+router.get('/channels/activity', wrap(async (req, res) => {
+  const snap = await getSnapshot();
+  res.json({ events: await store.listEvents(snap.user.id, Number(req.query.limit || 30)) });
 }));
 
 router.post('/transactions/pending', wrap(async (req, res) => {
@@ -108,33 +135,13 @@ router.post('/transactions/pending', wrap(async (req, res) => {
 
 router.post('/transactions/:id/confirm', wrap(async (req, res) => {
   const snap = await getSnapshot();
-  const p = await store.getPending(req.params.id);
-  if (!p) return res.status(404).json({ error: 'Pending transaction not found' });
-  if (p.userId !== snap.user.id) return res.status(403).json({ error: 'Not your transaction' });
-  if (p.status !== 'pending') return res.status(409).json({ error: `Transaction already ${p.status}` });
-  if (new Date(p.expiresAt) < new Date()) {
-    await store.updatePending(p._id, { status: 'expired' });
-    return res.status(410).json({ error: 'This confirmation expired. Ask again to set it up.' });
-  }
-  const from = findAccount(snap, p.fromId);
-  if (!from || from.balance < p.amount) return res.status(400).json({ error: 'Insufficient funds for this transfer now.' });
-
-  const result = await executeTransfer({ fromId: p.fromId, toId: p.toId, amount: p.amount, description: `MoneyCall: ${p.label}` });
-  const updated = await store.updatePending(p._id, {
-    status: 'executed', executedAt: new Date(), nessieTransferId: result.nessieTransferId,
-  });
-  res.json({
-    pending: updated,
-    message: `Done. ${money(p.amount)} moved from ${result.from.nickname} to ${result.to.nickname}. ${result.from.nickname} now has ${money(result.from.balance)}.`,
-    overview: await buildOverview(),
-  });
+  const { pending, message } = await confirmPending(req.params.id, { userId: snap.user.id });
+  res.json({ pending, message, overview: await buildOverview() });
 }));
 
 router.post('/transactions/:id/cancel', wrap(async (req, res) => {
-  const p = await store.getPending(req.params.id);
-  if (!p) return res.status(404).json({ error: 'Pending transaction not found' });
-  if (p.status !== 'pending') return res.status(409).json({ error: `Transaction already ${p.status}` });
-  res.json({ pending: await store.updatePending(p._id, { status: 'cancelled' }) });
+  const snap = await getSnapshot();
+  res.json({ pending: await cancelPending(req.params.id, { userId: snap.user.id }) });
 }));
 
 router.get('/scenarios', wrap(async (req, res) => {
@@ -147,6 +154,11 @@ router.get('/activity', wrap(async (req, res) => {
   res.json({ pending: await store.listPending(snap.user.id) });
 }));
 
+router.get('/conversations', wrap(async (req, res) => {
+  const snap = await getSnapshot();
+  res.json({ conversations: await store.listConversations(snap.user.id) });
+}));
+
 router.get('/conversations/:id', wrap(async (req, res) => {
   res.json((await store.getConversation(req.params.id)) || { _id: req.params.id, messages: [] });
 }));
@@ -154,6 +166,7 @@ router.get('/conversations/:id', wrap(async (req, res) => {
 // Restores the demo balances (synthetic mode) so the judge script can run again.
 router.post('/demo/reset', wrap(async (req, res) => {
   await store.clearMemory();
+  await resetNessieDemo();
   await resetSnapshot();
   res.json(await buildOverview());
 }));

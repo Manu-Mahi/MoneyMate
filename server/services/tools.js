@@ -95,9 +95,17 @@ function accountView(a) {
   return v;
 }
 
-export function makeContext({ snap, conv, userId }) {
-  return { snap, conv, userId, ui: { scenarios: [], comparison: null, pending: null }, scenarios: new Map(), trace: [] };
+export function makeContext({ snap, conv, userId, channel = 'web' }) {
+  return { snap, conv, userId, channel, ui: { scenarios: [], comparison: null, pending: null }, scenarios: new Map(), trace: [] };
 }
+
+// How the user confirms on this channel: a button on the web, a spoken or
+// texted "yes" everywhere else.
+export const confirmHint = (ctx) => {
+  if (ctx.channel === 'web') return 'press Confirm';
+  if (config.transferPin) return ctx.channel === 'voice' ? 'say their 4-digit PIN' : 'reply with their 4-digit PIN';
+  return ctx.channel === 'voice' ? 'say yes' : 'reply YES';
+};
 
 async function loadScenario(ctx, id) {
   return ctx.scenarios.get(id) || (await store.getScenario(id));
@@ -201,6 +209,7 @@ export const handlers = {
       toId: sc.action.toId,
       amount: sc.amount,
       label: sc.label,
+      channel: ctx.channel,
       status: 'pending',
       expiresAt: new Date(Date.now() + config.pendingTtlMinutes * 60000),
       summary: {
@@ -210,7 +219,7 @@ export const handlers = {
     };
     await store.createPending(p);
     ctx.ui.pending = p;
-    return { pending_id: p._id, status: 'awaiting_user_confirmation', note: 'Tell the user to press Confirm (or say "confirm"). You cannot execute it yourself.' };
+    return { pending_id: p._id, status: 'awaiting_user_confirmation', note: `Tell the user to ${confirmHint(ctx)} to finish. You cannot execute it yourself.` };
   },
 };
 

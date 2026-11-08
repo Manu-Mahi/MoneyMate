@@ -46,6 +46,7 @@ export function Sidebar() {
             <Dot on={status?.gemini} label="Gemini AI" detail={status?.gemini ? 'live' : 'local engine'} />
             <Dot on={overview?.source === 'nessie'} label="Capital One Nessie" detail={overview?.source === 'nessie' ? 'live' : 'synthetic'} />
             <Dot on={status?.store === 'mongo'} label="MongoDB Atlas" detail={status?.store === 'mongo' ? 'live' : 'memory'} />
+            <Dot on={status?.photon} label="Photon texts & calls" detail={status?.photon ? (status?.photonWebhook ? 'live' : 'no webhook') : 'off'} />
             <Dot on label="Voice" detail="browser" />
           </div>
         </div>

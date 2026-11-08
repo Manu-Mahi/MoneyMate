@@ -21,5 +21,8 @@ export const api = {
   cancel: (id) => request('POST', `/transactions/${id}/cancel`),
   scenarios: () => request('GET', '/scenarios'),
   activity: () => request('GET', '/activity'),
+  conversations: () => request('GET', '/conversations'),
+  channelMessage: (body) => request('POST', '/channels/message', body),
+  channelActivity: () => request('GET', '/channels/activity'),
   reset: () => request('POST', '/demo/reset'),
 };
