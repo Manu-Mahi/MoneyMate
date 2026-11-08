@@ -19,7 +19,7 @@ function Shell() {
             <div className="card card-pad flex items-start gap-3">
               <AlertTriangle className="text-clay-deep" />
               <div>
-                <p className="font-semibold">Can't reach the MoneyCall server.</p>
+                <p className="font-semibold">Can't reach the Chatter Bank server.</p>
                 <p className="text-sm text-forest/70">{loadError}. Start it with <code className="rounded bg-cream-200 px-1">cd server &amp;&amp; npm run dev</code>.</p>
                 <button onClick={refresh} className="btn-primary mt-3">Try again</button>
               </div>

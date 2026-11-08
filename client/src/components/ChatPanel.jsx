@@ -97,12 +97,12 @@ export default function ChatPanel({ tall = false }) {
           {speech.supported && (
             <button type="button" onClick={speech.listening ? speech.stop : speech.start}
               className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${speech.listening ? 'listening bg-clay text-white' : 'bg-forest text-gold hover:bg-forest-700'}`}
-              aria-label={speech.listening ? 'Stop listening' : 'Speak to MoneyCall'} title={speech.listening ? 'Listening… tap to stop' : 'Tap and speak'}>
+              aria-label={speech.listening ? 'Stop listening' : 'Speak to Chatter Bank'} title={speech.listening ? 'Listening… tap to stop' : 'Tap and speak'}>
               {speech.listening ? <MicOff size={18} /> : <Mic size={18} />}
             </button>
           )}
           <input value={text} onChange={(e) => setText(e.target.value)} className="input !rounded-full !py-3"
-            placeholder={speech.listening ? 'Listening…' : 'Ask or tell MoneyCall what you want to do'} aria-label="Message" />
+            placeholder={speech.listening ? 'Listening…' : 'Ask or tell Chatter Bank what you want to do'} aria-label="Message" />
           <button type="submit" disabled={busy || !text.trim()} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sage text-cream hover:bg-forest disabled:opacity-40" aria-label="Send">
             <Send size={17} />
           </button>

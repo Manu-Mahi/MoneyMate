@@ -125,7 +125,7 @@ export default function ImpactPreview({ height = 280, compact: small = false }) 
         </div>
       ) : (
         <p className="mt-3 text-sm text-forest/70">
-          Lowest projected balance: <span className="num font-semibold">{money(overview.forecast.lowest.balance)}</span> on {shortDate(overview.forecast.lowest.date)}. Ask MoneyCall about a transfer or purchase to see its impact here.
+          Lowest projected balance: <span className="num font-semibold">{money(overview.forecast.lowest.balance)}</span> on {shortDate(overview.forecast.lowest.date)}. Ask Chatter Bank about a transfer or purchase to see its impact here.
         </p>
       )}
     </section>

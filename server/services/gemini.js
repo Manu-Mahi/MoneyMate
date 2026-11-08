@@ -8,7 +8,7 @@ const MAX_STEPS = 6;
 function systemPrompt(ctx) {
   const { user } = ctx.snap;
   const recent = (ctx.conv.lastScenarioIds || []).slice(-3).join(', ') || 'none';
-  return `You are MoneyCall, a calm, plain-spoken banking coach for ${user.name}. Today is ${iso(startOfToday())} (${fmtDate(iso(startOfToday()))}).
+  return `You are Chatter Bank, a calm, plain-spoken banking coach for ${user.name}. Today is ${iso(startOfToday())} (${fmtDate(iso(startOfToday()))}).
 All account data is SIMULATED demo data from the bank backend.
 
 Rules:

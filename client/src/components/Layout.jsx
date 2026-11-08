@@ -27,7 +27,7 @@ export function Sidebar() {
       <div className="flex items-center gap-2.5 px-2">
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold text-forest"><Phone size={17} /></span>
         <div>
-          <div className="font-display text-xl font-semibold leading-none">MoneyCall</div>
+          <div className="font-display text-xl font-semibold leading-none">Chatter Bank</div>
           <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-gold/80">Thinks before you spend</div>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function TopBar() {
       <div className="flex items-center gap-2">
         <button onClick={resetDemo} className="btn-ghost text-xs" title="Restore demo balances"><RotateCcw size={14} />Reset demo</button>
         {speech.supported && page !== 'assistant' && (
-          <button onClick={() => { setPage('assistant'); setTimeout(speech.start, 150); }} className="btn-primary"><Mic size={16} />Talk to MoneyCall</button>
+          <button onClick={() => { setPage('assistant'); setTimeout(speech.start, 150); }} className="btn-primary"><Mic size={16} />Talk to Chatter Bank</button>
         )}
       </div>
     </header>

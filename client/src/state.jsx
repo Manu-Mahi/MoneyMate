@@ -10,7 +10,7 @@ const NO = /^(no|nope|cancel|stop|don't|do not|never mind|nevermind)\b/i;
 
 const WELCOME = {
   role: 'assistant',
-  text: "Hi Alex, I'm MoneyCall. Ask me anything about your money, or tell me what you want to do and I'll show you what happens next, before it happens.",
+  text: "Hi Alex, I'm Chatter Bank. Ask me anything about your money, or tell me what you want to do and I'll show you what happens next, before it happens.",
 };
 
 export function AppProvider({ children }) {

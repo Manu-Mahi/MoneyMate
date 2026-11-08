@@ -24,7 +24,7 @@ function Bubble({ m }) {
 
 export default function ChannelCard({ compact = false }) {
   const { status, refresh, notify } = useApp();
-  const [thread, setThread] = useState([{ role: 'assistant', text: 'Text MoneyCall like you would from your phone. Try "balance" or "move $300 to savings". Transfers are confirmed with your PIN (or YES when no PIN is set).' }]);
+  const [thread, setThread] = useState([{ role: 'assistant', text: 'Text Chatter Bank like you would from your phone. Try "balance" or "move $300 to savings". Transfers are confirmed with your PIN (or YES when no PIN is set).' }]);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [activity, setActivity] = useState([]);
@@ -85,10 +85,10 @@ export default function ChannelCard({ compact = false }) {
         </div>
         <div ref={listRef} className="scrollbar-thin space-y-2 overflow-y-auto pr-1" style={{ maxHeight: compact ? 180 : 240 }}>
           {thread.map((m, i) => <Bubble key={i} m={m} />)}
-          {busy && <div className="text-[11px] text-forest/50">MoneyCall is typing…</div>}
+          {busy && <div className="text-[11px] text-forest/50">Chatter Bank is typing…</div>}
         </div>
         <form onSubmit={send} className="mt-2 flex items-center gap-2">
-          <input value={text} onChange={(e) => setText(e.target.value)} className="input !rounded-full !py-2 text-sm" placeholder="Text MoneyCall…" aria-label="Text message" />
+          <input value={text} onChange={(e) => setText(e.target.value)} className="input !rounded-full !py-2 text-sm" placeholder="Text Chatter Bank…" aria-label="Text message" />
           <button type="submit" disabled={busy || !text.trim()} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest text-gold disabled:opacity-40" aria-label="Send text"><Send size={15} /></button>
         </form>
       </div>

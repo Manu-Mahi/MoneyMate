@@ -133,8 +133,8 @@ async function loadFromNessie() {
       if (isMoneyCallRecord(x)) acct.balance = round2(acct.balance - Number(x.amount || 0));
       transactions.push({
         id: recordId(x), accountId: a._id, date: String(x.transaction_date || iso(today)).slice(0, 10),
-        description: String(x.description || 'Transfer').replace(/\s*\[[a-z]+:[^\]]+\]/g, ''), amount: -Number(x.amount || 0), category: 'transfer',
-        ...(isMoneyCallRecord(x) ? { via: 'MoneyCall' } : {}),
+        description: String(x.description || 'Transfer').replace(/^MoneyCall:\s*/, '').replace(/\s*\[[a-z]+:[^\]]+\]/g, ''), amount: -Number(x.amount || 0), category: 'transfer',
+        ...(isMoneyCallRecord(x) ? { via: 'Chatter Bank' } : {}),
       });
     }
     for (const x of dep) {
@@ -180,8 +180,8 @@ async function loadFromNessie() {
       const cat = mc ? 'transfer' : categorize(x.description);
       transactions.push({
         id: recordId(x), accountId: a._id, date: String(x.transaction_date || iso(today)).slice(0, 10),
-        description: String(x.description || 'Deposit').replace(/\s*\[[a-z]+:[^\]]+\]/g, ''), amount: Number(x.amount || 0), category: cat === 'shopping' ? 'income' : cat,
-        ...(mc ? { via: 'MoneyCall' } : {}),
+        description: String(x.description || 'Deposit').replace(/^MoneyCall:\s*/, '').replace(/\s*\[[a-z]+:[^\]]+\]/g, ''), amount: Number(x.amount || 0), category: cat === 'shopping' ? 'income' : cat,
+        ...(mc ? { via: 'Chatter Bank' } : {}),
       });
     }
     for (const x of wd) {
@@ -336,10 +336,10 @@ export async function executeTransfer({ fromId, toId, amount, description }) {
   to.balance = round2(to.kind === 'liability' ? to.balance - amount : to.balance + amount);
 
   const today = iso(startOfToday());
-  const label = description || `Transfer to ${to.nickname}`;
+  const label = String(description || `Transfer to ${to.nickname}`).replace(/^MoneyCall:\s*/, '');
   snap.transactions.unshift(
-    { id: uid('t'), accountId: from.id, date: today, description: label, amount: -amount, category: 'transfer', via: 'MoneyCall' },
-    { id: uid('t'), accountId: to.id, date: today, description: `Transfer from ${from.nickname}`, amount, category: 'transfer', via: 'MoneyCall' },
+    { id: uid('t'), accountId: from.id, date: today, description: label, amount: -amount, category: 'transfer', via: 'Chatter Bank' },
+    { id: uid('t'), accountId: to.id, date: today, description: `Transfer from ${from.nickname}`, amount, category: 'transfer', via: 'Chatter Bank' },
   );
 
   return { from, to, amount, nessieTransferId, syncNote };

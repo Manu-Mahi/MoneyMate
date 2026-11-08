@@ -66,8 +66,8 @@ export function Transactions() {
     <div className="grid gap-5 lg:grid-cols-3">
       <div className="lg:col-span-2"><TransactionsList limit={25} title="All transactions" /></div>
       <section className="card card-pad">
-        <div className="flex items-center gap-2"><History size={16} className="text-sage" /><h2 className="font-display text-lg font-semibold">MoneyCall audit trail</h2></div>
-        <p className="mt-1 text-xs text-forest/60">Every transfer MoneyCall prepared, and what you decided.</p>
+        <div className="flex items-center gap-2"><History size={16} className="text-sage" /><h2 className="font-display text-lg font-semibold">Chatter Bank audit trail</h2></div>
+        <p className="mt-1 text-xs text-forest/60">Every transfer Chatter Bank prepared, and what you decided.</p>
         <ul className="mt-3 space-y-2">
           {activity.length === 0 && <li className="text-sm text-forest/55">Nothing yet. Ask the assistant to move money.</li>}
           {activity.map((p) => (

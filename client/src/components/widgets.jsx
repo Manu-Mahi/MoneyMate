@@ -201,7 +201,7 @@ export function TransactionsList({ limit = 6, title = 'Recent transactions' }) {
               {t.amount > 0 ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium">{t.description}{t.via && <span className="chip ml-2 !py-0 bg-gold-soft text-gold-deep text-[10px]">MoneyCall</span>}</div>
+              <div className="truncate text-sm font-medium">{t.description}{t.via && <span className="chip ml-2 !py-0 bg-gold-soft text-gold-deep text-[10px]">Chatter Bank</span>}</div>
               <div className="text-[11px] text-forest/55">{shortDate(t.date)} · {name(t.accountId)}</div>
             </div>
             <div className={`num text-sm font-semibold ${t.amount > 0 ? 'text-sage' : ''}`}>{money(t.amount, { sign: true })}</div>
